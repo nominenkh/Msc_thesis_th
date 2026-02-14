@@ -1,0 +1,88 @@
+## =============================================================================
+## RAJAN-ZINGALES REPLICATION - FULL CLEAN SCRIPT
+## =============================================================================
+
+# 1. LOAD LIBRARIES
+library(dplyr)
+library(plm)
+library(lmtest)
+library(sandwich)
+library(stargazer)
+
+## ---- 2. DATA PREPARATION ----
+# Note: Ensure growth, ex_dep, and fin_dev are in your environment
+master_data <- growth %>%
+  left_join(ex_dep,  by = c("isic_code", "period")) %>%
+  left_join(fin_dev, by = c("country_code", "period")) %>%
+  mutate(
+    across(c(external_dependence, totcap_gdp, domcre_gdp, rule_law), as.numeric),
+    int_totcap   = external_dependence * totcap_gdp,
+    int_domcred  = external_dependence * domcre_gdp,
+    int_rulelaw  = external_dependence * rule_law,
+    int_uk       = external_dependence * as.numeric(legor_uk),
+    int_fr       = external_dependence * as.numeric(legor_fr),
+    int_ge       = external_dependence * as.numeric(legor_ge),
+    int_sc       = external_dependence * as.numeric(legor_sc),
+    country_code = factor(country_code),
+    isic_code    = factor(isic_code)
+  )
+
+## ---- 3. REGRESSION FUNCTION ----
+run_rz_analysis <- function(df, per) {
+  
+  d_sub <- df %>% filter(period == per)
+  if(nrow(d_sub) < 10) return(NULL)
+  
+  pd <- pdata.frame(d_sub, index = "country_code")
+  
+  # Models
+  m1 <- plm(growth ~ industry_share + int_totcap + isic_code, data = pd, model = "within")
+  m2 <- plm(growth ~ industry_share + int_domcred + isic_code, data = pd, model = "within")
+  m3 <- plm(growth ~ industry_share + int_rulelaw + isic_code, data = pd, model = "within")
+  m4 <- plm(growth ~ industry_share + int_totcap + int_rulelaw + isic_code, data = pd, model = "within")
+  m5 <- plm(growth ~ industry_share + int_rulelaw + isic_code | 
+              industry_share + int_uk + int_fr + int_ge + int_sc + isic_code, 
+            data = pd, model = "within")
+  
+  # Calculate Economic Magnitude (Difference in Growth)
+  # (Coefficient * (75th-25th ED) * (75th-25th FinDev))
+  d_ext <- diff(quantile(d_sub$external_dependence, c(0.25, 0.75), na.rm=T))
+  d_tot <- diff(quantile(d_sub$totcap_gdp, c(0.25, 0.75), na.rm=T))
+  d_dom <- diff(quantile(d_sub$domcre_gdp, c(0.25, 0.75), na.rm=T))
+  d_rl  <- diff(quantile(d_sub$rule_law, c(0.25, 0.75), na.rm=T))
+  
+  diffs <- c(
+    as.numeric(coef(m1)["int_totcap"] * d_ext * d_tot),
+    as.numeric(coef(m2)["int_domcred"] * d_ext * d_dom),
+    as.numeric(coef(m3)["int_rulelaw"] * d_ext * d_rl),
+    as.numeric(coef(m4)["int_rulelaw"] * d_ext * d_rl),
+    as.numeric(coef(m5)["int_rulelaw"] * d_ext * d_rl)
+  )
+  
+  return(list(period = per, models = list(m1, m2, m3, m4, m5), diff_row = diffs))
+}
+
+## ---- 4. EXECUTION & FORMATTED OUTPUT ----
+periods <- c("1990-1999", "2000-2009", "2010-2019", "2020-2024")
+all_results <- lapply(periods, function(p) run_rz_analysis(master_data, p))
+
+for(res in all_results) {
+  if(is.null(res)) next
+  
+  cat("\n\nPERIOD:", res$period, "\n")
+  
+  stargazer(res$models, 
+            type = "text", 
+            column.labels = c("TotCap", "DomCred", "RuleLaw", "Combined", "IV"),
+            omit = "isic_code", # Keeps the table clean
+            covariate.labels = c("Industry Share", "ED x Total Cap", "ED x Dom Credit", "ED x Rule of Law"),
+            # Add Magnitude Row and FE Row
+            add.lines = list(
+              c("Industry Fixed Effects", "Yes", "Yes", "Yes", "Yes", "Yes"),
+              c("Growth Differential", round(res$diff_row, 4))
+            ),
+            # Reporting Adjusted R2 as discussed
+            keep.stat = c("n", "adj.rsq"), 
+            notes = "Standard errors clustered by country.",
+            digits = 4)
+}
