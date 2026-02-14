@@ -3,9 +3,6 @@
 ## =============================================================================
 
 # 1. ENVIRONMENT SETUP
-rm(list=ls()) 
-graphics.off()
-cat("\014")
 
 library(readxl)
 library(dplyr)
