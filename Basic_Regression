@@ -1,41 +1,76 @@
 ## =============================================================================
-## RAJAN-ZINGALES REPLICATION - FULL CLEAN SCRIPT
+## MASTER THESIS: RAJAN-ZINGALES REPLICATION & EXTENSION (1990-2024)
 ## =============================================================================
 
-# 1. LOAD LIBRARIES
+# 1. ENVIRONMENT SETUP
+rm(list=ls()) 
+graphics.off()
+cat("\014")
+
+library(readxl)
 library(dplyr)
 library(plm)
 library(lmtest)
 library(sandwich)
 library(stargazer)
 
-## ---- 2. DATA PREPARATION ----
-# Note: Ensure growth, ex_dep, and fin_dev are in your environment
+## ---- 2. DATA IMPORT ----
+# Path provided by user
+file_path <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/Results_Decade/Table4_Regression/Master_data.xlsx"
+
+if(!file.exists(file_path)) stop("CRITICAL ERROR: Input file not found. Check path.")
+
+growth  <- read_excel(file_path, sheet = "growth")
+ex_dep  <- read_excel(file_path, sheet = "ex_dep")
+fin_dev <- read_excel(file_path, sheet = "fin_dev")
+
+## ---- 3. DATA CLEANING & MERGING ----
+
+# CRITICAL: Filter for 'All' firms to prevent data duplication
+# (Removes 'Young' and 'Mature' splits for the main regression)
+ex_dep <- ex_dep %>% 
+  filter(trimws(firm_type) == "All")
+
+# Ensure matching types for merging
+growth$isic_code     <- as.character(growth$isic_code)
+ex_dep$isic_code     <- as.character(ex_dep$isic_code)
+growth$period        <- as.character(growth$period)
+ex_dep$period        <- as.character(ex_dep$period)
+fin_dev$period       <- as.character(fin_dev$period)
+fin_dev$country_code <- as.character(fin_dev$country_code)
+
+# Merge Datasets
 master_data <- growth %>%
   left_join(ex_dep,  by = c("isic_code", "period")) %>%
   left_join(fin_dev, by = c("country_code", "period")) %>%
   mutate(
+    # numeric conversion
     across(c(external_dependence, totcap_gdp, domcre_gdp, rule_law), as.numeric),
+    # Interaction Terms
     int_totcap   = external_dependence * totcap_gdp,
     int_domcred  = external_dependence * domcre_gdp,
     int_rulelaw  = external_dependence * rule_law,
+    # IV Instruments (Interaction of ExtDep * Legal Origin)
     int_uk       = external_dependence * as.numeric(legor_uk),
     int_fr       = external_dependence * as.numeric(legor_fr),
     int_ge       = external_dependence * as.numeric(legor_ge),
     int_sc       = external_dependence * as.numeric(legor_sc),
+    # Fixed Effects factors
     country_code = factor(country_code),
     isic_code    = factor(isic_code)
   )
 
-## ---- 3. REGRESSION FUNCTION ----
+## ---- 4. ANALYSIS FUNCTION ----
 run_rz_analysis <- function(df, per) {
   
   d_sub <- df %>% filter(period == per)
+  
+  # Minimum observation check
   if(nrow(d_sub) < 10) return(NULL)
   
   pd <- pdata.frame(d_sub, index = "country_code")
   
-  # Models
+  # Models: (1) TotCap, (2) DomCred, (3) RuleLaw, (4) Combined, (5) IV
   m1 <- plm(growth ~ industry_share + int_totcap + isic_code, data = pd, model = "within")
   m2 <- plm(growth ~ industry_share + int_domcred + isic_code, data = pd, model = "within")
   m3 <- plm(growth ~ industry_share + int_rulelaw + isic_code, data = pd, model = "within")
@@ -44,8 +79,7 @@ run_rz_analysis <- function(df, per) {
               industry_share + int_uk + int_fr + int_ge + int_sc + isic_code, 
             data = pd, model = "within")
   
-  # Calculate Economic Magnitude (Difference in Growth)
-  # (Coefficient * (75th-25th ED) * (75th-25th FinDev))
+  # Calculate Economic Magnitude (Growth Differential: 75th - 25th percentile)
   d_ext <- diff(quantile(d_sub$external_dependence, c(0.25, 0.75), na.rm=T))
   d_tot <- diff(quantile(d_sub$totcap_gdp, c(0.25, 0.75), na.rm=T))
   d_dom <- diff(quantile(d_sub$domcre_gdp, c(0.25, 0.75), na.rm=T))
@@ -62,26 +96,32 @@ run_rz_analysis <- function(df, per) {
   return(list(period = per, models = list(m1, m2, m3, m4, m5), diff_row = diffs))
 }
 
-## ---- 4. EXECUTION & FORMATTED OUTPUT ----
+## ---- 5. EXECUTION & REPORTING ----
 periods <- c("1990-1999", "2000-2009", "2010-2019", "2020-2024")
-all_results <- lapply(periods, function(p) run_rz_analysis(master_data, p))
+results <- lapply(periods, function(p) run_rz_analysis(master_data, p))
 
-for(res in all_results) {
+for(res in results) {
   if(is.null(res)) next
   
-  cat("\n\nPERIOD:", res$period, "\n")
+  # Calculate Clustered Standard Errors (HC1) for Stargazer
+  se_list <- lapply(res$models, function(m) {
+    sqrt(diag(vcovHC(m, type = "HC1", cluster = "group")))
+  })
+  
+  cat("\n\n", paste(rep("=", 60), collapse=""), "\n")
+  cat("  PERIOD:", res$period, "\n")
+  cat(paste(rep("=", 60), collapse=""), "\n")
   
   stargazer(res$models, 
             type = "text", 
+            se = se_list,  # Applies clustered SEs to significance stars
             column.labels = c("TotCap", "DomCred", "RuleLaw", "Combined", "IV"),
-            omit = "isic_code", # Keeps the table clean
+            omit = "isic_code", 
             covariate.labels = c("Industry Share", "ED x Total Cap", "ED x Dom Credit", "ED x Rule of Law"),
-            # Add Magnitude Row and FE Row
             add.lines = list(
               c("Industry Fixed Effects", "Yes", "Yes", "Yes", "Yes", "Yes"),
               c("Growth Differential", round(res$diff_row, 4))
             ),
-            # Reporting Adjusted R2 as discussed
             keep.stat = c("n", "adj.rsq"), 
             notes = "Standard errors clustered by country.",
             digits = 4)
