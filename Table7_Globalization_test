@@ -1,28 +1,17 @@
-## =============================================================================
-## TABLE 7: GLOBALIZATION TEST - BIS FOREIGN BANK CREDIT EXPOSURE (FIXED)
-## =============================================================================
 
-# 1. ENVIRONMENT SETUP
-rm(list=ls()) 
-graphics.off()
-cat("\014")
+# TABLE 7: External Finance and Foreign Bank Credit Exposure
 
-library(readxl)
-library(dplyr)
-library(plm)
-library(lmtest)
-library(sandwich)
-library(stargazer)
 
-## ---- 2. DATA IMPORT ----
-file_path <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/Results_Decade/Table4_Regression/Master_data.xlsx"
+# 1. DATA IMPORT 
+
+file_path <- "../data/Master_data.xlsx"
 
 growth  <- read_excel(file_path, sheet = "growth")
 ex_dep  <- read_excel(file_path, sheet = "ex_dep")
 fin_dev <- read_excel(file_path, sheet = "fin_dev")
 
-## ---- 3. DATA CLEANING & MERGING ----
-# Filter for 'All' firms to match your main methodology
+# 2. DATA CLEANING & MERGING 
+
 ex_dep <- ex_dep %>% filter(trimws(firm_type) == "All")
 
 growth$isic_code     <- as.character(growth$isic_code)
@@ -32,7 +21,7 @@ ex_dep$period        <- as.character(ex_dep$period)
 fin_dev$period       <- as.character(fin_dev$period)
 fin_dev$country_code <- as.character(fin_dev$country_code)
 
-# Merge datasets and create interactions for Table 7
+
 master_data <- growth %>%
   left_join(ex_dep,  by = c("isic_code", "period")) %>%
   left_join(fin_dev, by = c("country_code", "period")) %>%
@@ -47,11 +36,10 @@ master_data <- growth %>%
     isic_code    = factor(isic_code)
   )
 
-## ---- 4. ANALYSIS FUNCTION (Table 7 Structure) ----
+# 3. ANALYSIS FUNCTION 
+
 run_table7_analysis <- function(df, per) {
   
-  # THE FIX: Filter for the period AND force a consistent sample by dropping 
-  # any row that is missing data for ANY of the variables used in Model 2.
   d_sub <- df %>% 
     filter(period == per) %>%
     filter(!is.na(growth), 
@@ -63,7 +51,7 @@ run_table7_analysis <- function(df, per) {
   
   pd <- pdata.frame(d_sub, index = "country_code")
   
-  # Models match your screenshot: (1) Foreign Finance Only, (2) Joint Domestic + Foreign
+
   m1 <- plm(growth ~ industry_share + int_foreign + isic_code, data = pd, model = "within")
   m2 <- plm(growth ~ industry_share + int_foreign + int_domcred + isic_code, data = pd, model = "within")
   
@@ -78,14 +66,15 @@ run_table7_analysis <- function(df, per) {
   diff_d <- c(NA, 
               as.numeric(coef(m2)["int_domcred"] * d_ext * d_dom))
   
-  # Explicitly pull Adjusted R-squared to account for Fixed Effects degrees of freedom
+ 
   adj_r2 <- c(summary(m1)$r.squared["adjrsq"], 
               summary(m2)$r.squared["adjrsq"])
   
   return(list(period = per, models = list(m1, m2), diff_f = diff_f, diff_d = diff_d, adj_r2 = adj_r2))
 }
 
-## ---- 5. EXECUTION & PRINTING ----
+# 4. EXECUTION & PRINTING 
+
 # 2020-2024 is excluded from this globalization test extension
 periods <- c("1990-1999", "2000-2009", "2010-2019")
 results <- lapply(periods, function(p) run_table7_analysis(master_data, p))
@@ -118,3 +107,4 @@ for(res in results) {
             notes = "Standard errors clustered by country. Adj R-squared accounts for fixed effects degrees of freedom.",
             digits = 5)
 }
+
