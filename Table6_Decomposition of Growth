@@ -1,5 +1,5 @@
 # ==============================================================================
-# TABLE 6: DECOMPOSITION OF GROWTH (FULL REPLICATION)
+# TABLE 6: DECOMPOSITION OF GROWTH (FULL REPLICATION WITH CONSISTENT SAMPLE)
 # ==============================================================================
 library(dplyr)
 library(readxl)
@@ -46,7 +46,9 @@ df_final <- growth %>%
     interaction = as.numeric(external_dependence) * as.numeric(totcap_gdp),
     int_growth = growth - ext_growth
   ) %>%
-  filter(!is.na(interaction), !is.na(industry_share))
+  # ADDED FIX: Force a consistent sample by dropping any NAs across all 3 growth metrics
+  filter(!is.na(interaction), !is.na(industry_share), 
+         !is.na(growth), !is.na(ext_growth), !is.na(int_growth))
 
 # 4. REGRESSION FUNCTION (Fixed Effects with Clustered SEs)
 run_model <- function(data, y_var, p_filter) {
