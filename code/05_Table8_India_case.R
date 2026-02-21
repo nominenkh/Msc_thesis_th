@@ -1,7 +1,8 @@
 
 # TABLE 8: Average annual growth in manufacturing value added in India by external dependence
 
-# 1. DIRECT LINK TO YOUR FILE
+source("00_setup.R")
+
 
 file_path <- "../data/Master_data.xlsx"
 
@@ -9,7 +10,6 @@ growth  <- read_excel(file_path, sheet = "growth")
 ex_dep  <- read_excel(file_path, sheet = "ex_dep")
 fin_dev <- read_excel(file_path, sheet = "fin_dev")
 
-# 2. CLEAN NAMES & TYPES
 names(sheet_growth)  <- tolower(names(sheet_growth))
 names(sheet_ex_dep)  <- tolower(names(sheet_ex_dep))
 names(sheet_fin_dev) <- tolower(names(sheet_fin_dev))
