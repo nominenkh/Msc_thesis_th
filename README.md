@@ -50,3 +50,6 @@ The codes were written and tested in R. The following packages must be installed
 * `lmtest`
 * `sandwich`
 * `stargazer`
+* ggplot2
+* tidyverse
+* patchwork
