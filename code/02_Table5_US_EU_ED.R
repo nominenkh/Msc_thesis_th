@@ -7,10 +7,10 @@ source("00_setup.R")
 
 file_path <- "../data/Master_data.xlsx"
 
-growth <- read_excel(data_path, sheet = "growth")
-fin_dev <- read_excel(data_path, sheet = "fin_dev")
-ex_dep_us <- read_excel(data_path, sheet = "ex_dep")
-ex_dep_eu <- read_excel(data_path, sheet = "ex_dep_eu")
+growth <- read_excel(file_path, sheet = "growth")
+fin_dev <- read_excel(file_path, sheet = "fin_dev")
+ex_dep_us <- read_excel(file_path, sheet = "ex_dep")
+ex_dep_eu <- read_excel(file_path, sheet = "ex_dep_eu")
 
 # 2. REGRESSION FUNCTION
 run_stargazer_model <- function(growth_data, ed_data, fd_data, period_filter, firm_type_filter) {
@@ -46,7 +46,7 @@ run_stargazer_model <- function(growth_data, ed_data, fd_data, period_filter, fi
 
 periods <- c("1990-1999", "2000-2009", "2010-2019", "2020-2024")
 benchmarks <- list(
-  list(name = "US All", data = ex_dep_us, type = "All"),
+  list(name = "US All", data = ex_dep, type = "All"),
   list(name = "EU All", data = ex_dep_eu, type = "All"),
   list(name = "EU Young", data = ex_dep_eu, type = "Young")
 )
