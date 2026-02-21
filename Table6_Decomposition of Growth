@@ -1,17 +1,11 @@
-# ==============================================================================
-# TABLE 6: DECOMPOSITION OF GROWTH (FULL REPLICATION WITH CONSISTENT SAMPLE)
-# ==============================================================================
-library(dplyr)
-library(readxl)
-library(plm)
-library(lmtest)
-library(sandwich)
-library(stargazer)
 
-# 1. LOAD DATA
-# Adjust these paths as needed for your local machine
-data_path <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/Results_Decade/Table4_Regression/Master_data.xlsx"
-estab_path <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/UNIDO_Establishments.xlsx"
+# TABLE 6: Decomposition of Growth
+
+
+# 1. DATA IMPORT
+
+data_path <- "../data/Master_data.xlsx"
+estab_path <- "../data/UNIDO_Establishments.xlsx"
 
 growth <- read_excel(data_path, sheet = "growth")
 ex_dep <- read_excel(data_path, sheet = "ex_dep") %>% filter(firm_type == "All")
@@ -50,7 +44,7 @@ df_final <- growth %>%
   filter(!is.na(interaction), !is.na(industry_share), 
          !is.na(growth), !is.na(ext_growth), !is.na(int_growth))
 
-# 4. REGRESSION FUNCTION (Fixed Effects with Clustered SEs)
+# 4. REGRESSION FUNCTION 
 run_model <- function(data, y_var, p_filter) {
   d <- data %>% filter(period == p_filter, !is.na(.data[[y_var]]))
   m <- plm(as.formula(paste(y_var, "~ industry_share + interaction")),
