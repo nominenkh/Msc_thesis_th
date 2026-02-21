@@ -12,7 +12,7 @@ fin_dev <- read_excel(file_path, sheet = "fin_dev")
 
 # 2. DATA CLEANING & MERGING 
 
-# CRITICAL: Filtering for 'All' firms to prevent data duplication
+# Filtering for 'All' firms to prevent data duplication
 
 ex_dep <- ex_dep %>% 
   filter(trimws(firm_type) == "All")
