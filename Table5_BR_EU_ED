@@ -1,6 +1,6 @@
-# ==============================================================================
+
 # TABLE 5: INDUSTRY GROWTH AND FINANCIAL DEVELOPMENT (3-DECIMAL PRECISION)
-# ==============================================================================
+
 library(dplyr)
 library(readxl)
 library(plm)
@@ -9,7 +9,8 @@ library(sandwich)
 library(stargazer)
 
 # 1. LOAD DATA
-data_path <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/Results_Decade/Table4_Regression/Master_data.xlsx"
+
+file_path <- "../data/Master_data.xlsx"
 
 growth <- read_excel(data_path, sheet = "growth")
 fin_dev <- read_excel(data_path, sheet = "fin_dev")
