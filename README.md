@@ -8,12 +8,12 @@ The thesis extends the Rajan and Zingales (1998) industry-level finance and grow
   * `Master_data.xlsx`: Includes aggregated sheets for industry growth, external dependence indices, and country-level financial development measures.
   * `UNIDO_Establishments.xlsx`: Contains establishment counts used for the extensive/intensive margin decomposition.
 * **code**: Contains all R scripts required to generate the thesis tables.
-  * 00_setup.R`: Master environment file that loads all necessary R packages.
-  * 01_Table4_Basic_regression.R: Executes the baseline fixed-effects regressions (Table 4).
-  * 02_Table5_US_EU_ED.R: Sensitivity analysis comparing results from US and EU firm based external dependence measure (Table5).
-  * 03_Table6_Decomposition_growth.R: Runs the extensive and intensive margin decomposition (Table 6).
-  * 04_Table7_Globalization_test.R: Tests the globalization channel using domestic and foreign credit (Table 7).
-  * 05_Table8_India_CaseS_tudy.R: Calculates average annual manufacturing growth by external dependence for the India case study (Table 8).
+  * `00_setup.R`: Master environment file that loads all necessary R packages.
+  * `01_Table4_Basic_regression.R`: Executes the baseline fixed-effects regressions (Table 4).
+  * `02_Table5_US_EU_ED.R`: Sensitivity analysis comparing results from US and EU firm based external dependence measure (Table5).
+  * `03_Table6_Decomposition_growth.R`: Runs the extensive and intensive margin decomposition (Table 6).
+  * `04_Table7_Globalization_test.R`: Tests the globalization channel using domestic and foreign credit (Table 7).
+  * `05_Table8_India_CaseS_tudy.R`: Calculates average annual manufacturing growth by external dependence for the India case study (Table 8).
 
 
 To comply with commercial licensing restrictions for databases such as LSEG DataStream, raw unaggregated firm-level microdata is excluded from this repository. The `data/` folder contains the final aggregated inputs required to replicate all regression outputs. 
