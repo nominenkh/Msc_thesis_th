@@ -1,2 +1,2 @@
 # Msc_thesis_th
-Repo contains code and documents for my master's thesis. 
+Repo contains R codes and files of my master's thesis. 
