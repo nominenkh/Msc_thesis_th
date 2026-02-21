@@ -34,10 +34,10 @@ Used to construct the industry-level External Financial Dependence index and Cap
 * **Deflators:** Producer Price Index (PPI) or GDP deflator sourced from the World Bank and IMF.
 
 **3. Country-Level Macro & Institutional Data**
-* **Domestic Credit to Private Sector (% of GDP):** World Bank World Development Indicators.
-* **Market Capitalization (% of GDP):** World Bank World Development Indicators.
-* **Rule of Law Index:** World Bank Worldwide Governance Indicators (scores ranging from -2.5 to 2.5).
-* **GDP per capita (constant USD):** World Bank Development Indicators.
+* **Domestic Credit to Private Sector (% of GDP):** World Bank World Development Indicators 	(FS.AST.PRVT.GD.ZS).
+* **Market Capitalization (% of GDP):** World Bank World Development Indicators (	CM.MKT.LCAP.GD.ZS).
+* **Rule of Law Index:** World Bank Worldwide Governance Indicators (scores ranging from -2.5 to 2.5). 	(RL.EST)
+* **GDP per capita (constant USD):** World Bank Development Indicators (NY.GDP.PCAP.KD)
 * **Consolidated Foreign Bank Claims (% of GDP):** Bank for International Settlements (BIS) Consolidated Banking Statistics, accessed via World Bank GFDD.OI.14.
 
 
