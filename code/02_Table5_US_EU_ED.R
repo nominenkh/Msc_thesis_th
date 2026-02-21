@@ -1,6 +1,7 @@
 
 # TABLE 5: Industry Growth and Financial Development using Alternative Benchmark
 
+source("00_setup.R")
 
 # 1. DATA IMPORT
 
