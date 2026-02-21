@@ -5,7 +5,7 @@
 # It outputs the aggregated variables found in the public Master_data.xlsx file.
 
 input_file_path  <- "../data/EX_DEP_US.xlsx"
-concordance_file <- "../data/Concordance_NAICS_Rev3.xlsx"
+concordance_file <- "../data/Concordance_NAICS_ISIC.xlsx"
 
 capex_sheet_name <- "CAPEX"
 ncfo_sheet_name  <- "NCFO"
