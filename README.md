@@ -3,6 +3,7 @@ Repo contains aggregated data and R replication scripts for my Master's thesis.
 
 The thesis extends the Rajan and Zingales (1998) industry-level finance and growth mechanism across a panel of 41 countries from 1990 to 2024. 
 
+**appendix:** Contains figures, and tables included in the appendix. 
 **data:** Contains the aggregated final datasets.
   * `Master_data.xlsx`: Includes aggregated sheets for industry growth, external dependence indices, and country-level financial development measures.
   * `UNIDO_Establishments.xlsx`: Contains establishment counts used for the extensive/intensive margin decomposition.
