@@ -10,20 +10,18 @@ library(lmtest)
 library(sandwich)
 library(stargazer)
 
-## ---- 2. DATA IMPORT ----
-# Path provided by user
-file_path <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/Results_Decade/Table4_Regression/Master_data.xlsx"
+# 2. DATA IMPORT 
 
-if(!file.exists(file_path)) stop("CRITICAL ERROR: Input file not found. Check path.")
+file_path <- "../data/Master_data.xlsx"
 
 growth  <- read_excel(file_path, sheet = "growth")
 ex_dep  <- read_excel(file_path, sheet = "ex_dep")
 fin_dev <- read_excel(file_path, sheet = "fin_dev")
 
-## ---- 3. DATA CLEANING & MERGING ----
+# 3. DATA CLEANING & MERGING 
 
-# CRITICAL: Filter for 'All' firms to prevent data duplication
-# (Removes 'Young' and 'Mature' splits for the main regression)
+# CRITICAL: Filtering for 'All' firms to prevent data duplication
+
 ex_dep <- ex_dep %>% 
   filter(trimws(firm_type) == "All")
 
@@ -56,7 +54,7 @@ master_data <- growth %>%
     isic_code    = factor(isic_code)
   )
 
-## ---- 4. ANALYSIS FUNCTION ----
+# 4. ANALYSIS FUNCTION
 run_rz_analysis <- function(df, per) {
   
   d_sub <- df %>% filter(period == per)
@@ -92,7 +90,7 @@ run_rz_analysis <- function(df, per) {
   return(list(period = per, models = list(m1, m2, m3, m4, m5), diff_row = diffs))
 }
 
-## ---- 5. EXECUTION & REPORTING ----
+# 5. EXECUTION & REPORTING 
 periods <- c("1990-1999", "2000-2009", "2010-2019", "2020-2024")
 results <- lapply(periods, function(p) run_rz_analysis(master_data, p))
 
