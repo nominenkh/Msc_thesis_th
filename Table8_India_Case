@@ -1,21 +1,15 @@
-# ==============================================================================
-# FINAL CLEAN INDIA SCRIPT (Removes "NA" Junk Column)
-# ==============================================================================
 
-library(readxl)
-library(dplyr)
-library(tidyr)
+# TABLE 8: Average annual growth in manufacturing value added in India by external dependence
 
 # 1. DIRECT LINK TO YOUR FILE
-path_master <- "/Users/nominenkhmunkh/Documents/Documents/Ohm/thesis/data/Results_Decade/Table4_Regression/Master_data.xlsx"
 
-print(">>> READING DATA...")
-# 2. LOAD SHEETS
-sheet_growth  <- read_excel(path_master, sheet = "growth")
-sheet_ex_dep  <- read_excel(path_master, sheet = "ex_dep")
-sheet_fin_dev <- read_excel(path_master, sheet = "fin_dev")
+file_path <- "../data/Master_data.xlsx"
 
-# 3. CLEAN NAMES & TYPES
+growth  <- read_excel(file_path, sheet = "growth")
+ex_dep  <- read_excel(file_path, sheet = "ex_dep")
+fin_dev <- read_excel(file_path, sheet = "fin_dev")
+
+# 2. CLEAN NAMES & TYPES
 names(sheet_growth)  <- tolower(names(sheet_growth))
 names(sheet_ex_dep)  <- tolower(names(sheet_ex_dep))
 names(sheet_fin_dev) <- tolower(names(sheet_fin_dev))
@@ -23,7 +17,7 @@ names(sheet_fin_dev) <- tolower(names(sheet_fin_dev))
 sheet_growth$isic_code <- as.character(sheet_growth$isic_code)
 sheet_ex_dep$isic_code <- as.character(sheet_ex_dep$isic_code)
 
-# Create Period
+
 sheet_growth <- sheet_growth %>%
   mutate(period = case_when(
     year >= 1990 & year <= 1999 ~ "1990-1999",
@@ -40,15 +34,10 @@ if("firm_type" %in% names(sheet_ex_dep)){
 }
 sheet_ex_dep <- sheet_ex_dep %>% distinct(isic_code, period, .keep_all = TRUE)
 
-# 4. MERGE
 full_data <- sheet_growth %>%
   left_join(sheet_ex_dep, by = c("isic_code", "period")) %>%
   left_join(sheet_fin_dev, by = c("country_code", "period"))
 
-# 5. CALCULATE CLEAN TABLE (No NA)
-print(">>> CALCULATING...")
-
-# Select India
 if ("IND" %in% unique(full_data$country_code)) {
   india_data <- full_data %>% filter(country_code == "IND")
 } else {
@@ -61,7 +50,7 @@ table_india <- india_data %>%
   mutate(
     Type = ifelse(external_dependence >= median_cutoff, "High Dependence", "Low Dependence")
   ) %>%
-  # *** THIS LINE REMOVES THE JUNK COLUMN ***
+ 
   filter(!is.na(Type)) %>%  
   group_by(period, Type) %>%
   summarise(
@@ -73,8 +62,4 @@ table_india <- india_data %>%
     Difference = `High Dependence` - `Low Dependence`
   )
 
-# 6. SHOW RESULT
-print("---------------------------------------------------")
-print("SUCCESS! HERE IS YOUR CLEAN TABLE:")
-print("---------------------------------------------------")
 print(table_india)
