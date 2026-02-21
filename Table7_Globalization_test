@@ -1,5 +1,5 @@
 ## =============================================================================
-## TABLE 7: GLOBALIZATION TEST - BIS FOREIGN BANK CREDIT EXPOSURE
+## TABLE 7: GLOBALIZATION TEST - BIS FOREIGN BANK CREDIT EXPOSURE (FIXED)
 ## =============================================================================
 
 # 1. ENVIRONMENT SETUP
@@ -50,7 +50,15 @@ master_data <- growth %>%
 ## ---- 4. ANALYSIS FUNCTION (Table 7 Structure) ----
 run_table7_analysis <- function(df, per) {
   
-  d_sub <- df %>% filter(period == per)
+  # THE FIX: Filter for the period AND force a consistent sample by dropping 
+  # any row that is missing data for ANY of the variables used in Model 2.
+  d_sub <- df %>% 
+    filter(period == per) %>%
+    filter(!is.na(growth), 
+           !is.na(industry_share), 
+           !is.na(int_foreign), 
+           !is.na(int_domcred))
+  
   if(nrow(d_sub) < 10) return(NULL)
   
   pd <- pdata.frame(d_sub, index = "country_code")
