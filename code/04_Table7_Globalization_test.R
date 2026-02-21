@@ -1,6 +1,7 @@
 
 # TABLE 7: External Finance and Foreign Bank Credit Exposure
 
+source("00_setup.R")
 
 # 1. DATA IMPORT 
 
