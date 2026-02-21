@@ -1,16 +1,8 @@
 
 # TABLE 4: Industry Growth and Various Measures of Development 
 
-# 1. ENVIRONMENT SETUP
 
-library(readxl)
-library(dplyr)
-library(plm)
-library(lmtest)
-library(sandwich)
-library(stargazer)
-
-# 2. DATA IMPORT 
+# 1. DATA IMPORT 
 
 file_path <- "../data/Master_data.xlsx"
 
@@ -18,7 +10,7 @@ growth  <- read_excel(file_path, sheet = "growth")
 ex_dep  <- read_excel(file_path, sheet = "ex_dep")
 fin_dev <- read_excel(file_path, sheet = "fin_dev")
 
-# 3. DATA CLEANING & MERGING 
+# 2. DATA CLEANING & MERGING 
 
 # CRITICAL: Filtering for 'All' firms to prevent data duplication
 
@@ -54,7 +46,7 @@ master_data <- growth %>%
     isic_code    = factor(isic_code)
   )
 
-# 4. ANALYSIS FUNCTION
+# 3. ANALYSIS FUNCTION
 run_rz_analysis <- function(df, per) {
   
   d_sub <- df %>% filter(period == per)
@@ -90,14 +82,14 @@ run_rz_analysis <- function(df, per) {
   return(list(period = per, models = list(m1, m2, m3, m4, m5), diff_row = diffs))
 }
 
-# 5. EXECUTION & REPORTING 
+# 4. EXECUTION & REPORTING 
 periods <- c("1990-1999", "2000-2009", "2010-2019", "2020-2024")
 results <- lapply(periods, function(p) run_rz_analysis(master_data, p))
 
 for(res in results) {
   if(is.null(res)) next
   
-  # Calculate Clustered Standard Errors (HC1) for Stargazer
+  # Clustered Standard Errors 
   se_list <- lapply(res$models, function(m) {
     sqrt(diag(vcovHC(m, type = "HC1", cluster = "group")))
   })
